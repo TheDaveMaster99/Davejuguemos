@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  
+<!--Welcome to the code of Davejuguemos!-->
+
+<head>
+    <link href="style.css" rel="stylesheet">
+    <script src="papaparse.min.js" defer></script>
+    <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Davejuguemos</title>
+
+    <!-- Favicon / Tab icon -->
+  <link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+
+  <!-- Apple iOS -->
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Android / Chrome -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Fonts / Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  </head>
+  <body><div class="screen1">
+
+    <h1 class="title">Davejuguemos</h1>
+
+    <div class="top-row">
+      <div class="score" id="score">0/0 = 0%</div>
+      <div class="answer hidden">Answer: <span id="answer-text">—</span></div>
+    </div>
+
+    <div class="input-container">
+      <textarea class="input-box" id="textInput"></textarea>
+    </div>
+
+    <div class="buttons">
+      <button id="definition">Definition</button>
+      <button id="sentence">Sentence</button>
+      <button id="answer">Answer</button>
+
+      <button id="audio">Audio</button>
+      <button id="enter">Enter</button>
+      <button id="reset">Reset</button>
+    </div>
+
+  </div>
+
+  <div class="screen2 hidden">
+    
+  </div>
+</body>
+</html>
