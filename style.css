@@ -134,7 +134,7 @@ body {
 
 @media (max-width: 480px) {
   .buttons button {
-    flex: 1 1 100%;
+    flex: 1 1 calc(50% - 12px);
   }
 
   .title {
