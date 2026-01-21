@@ -37,7 +37,8 @@ Papa.parse("words.csv", {
 
 function run() {
     random();
-    loadData(); 
+    loadData();
+    updateScore(); 
     speak(wordsArray[index].Word);
 
     enterB.addEventListener("click", () => {
@@ -49,6 +50,7 @@ function run() {
     resetB.addEventListener("click", () => {
         score = [0,0];
         scoreDisplay.innerText = "0/0 = 0%";
+        saveData();
     });
     audioB.addEventListener("click", () => {
         speak(wordsArray[index].Word);
@@ -110,9 +112,7 @@ function run() {
         speak(wordsArray[index].Word);
         }, 1200);
 
-        if(score[1] > 0){
-            scoreDisplay.innerText = score[0] + "/" + score[1] + " = " + (Math.round(((score[0]/score[1])*100))) + "%";
-        }
+       updateScore();
         if(flags.includes(wordsArray[index].Word)) {
             flagB.classList.add("yellow");
         } else {
@@ -129,28 +129,33 @@ function run() {
     localStorage.setItem("davejuguemosData", JSON.stringify(data)); 
 }
     function loadData() {
-    const savedData = localStorage.getItem("davejuguemosData");
+        const savedData = localStorage.getItem("davejuguemosData");
 
-    if (savedData) {
-        const data = JSON.parse(savedData);
+        if (savedData) {
+            const data = JSON.parse(savedData);
 
-        score = data.score || [0,0];
-        wrongs = data.wrongs || [];   
-        flags = data.flags || [];     
-    } else {
-        score = [0,0];
-        wrongs = [];
-        flags = [];
+            score = data.score || [0,0];
+            wrongs = data.wrongs || [];   
+            flags = data.flags || [];     
+        } else {
+            score = [0,0];
+            wrongs = [];
+         flags = [];
+        }
+
+    }
+    function updateScore() {
+        if(score[1] > 0) {
+            scoreDisplay.innerText = score[0] + "/" + score[1] + " = " + (Math.round(((score[0]/score[1])*100))) + "%";
+        }
+    }
+    function showAnswer(answer) {
+        answerText.textContent = answer;   
+        wholeAnswer.classList.remove("hidden"); 
+    }
+
+    function hideAnswer() {
+        wholeAnswer.classList.add("hidden"); 
     }
 }
 
-
-}
-function showAnswer(answer) {
-  answerText.textContent = answer;   
-  wholeAnswer.classList.remove("hidden"); 
-}
-
-function hideAnswer() {
-  wholeAnswer.classList.add("hidden"); 
-}

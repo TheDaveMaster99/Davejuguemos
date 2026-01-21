@@ -57,8 +57,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);       
-  text-overflow: ellipsis;     
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12); 
   max-width: 100%;             
   flex-shrink: 1;               
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -168,7 +167,12 @@ body {
     flex-direction: row;     
     align-items: center;      
     justify-content: space-between; 
-    gap: 8px;                 
+    gap: 8px; 
+    flex-wrap: wrap;                
+  }
+  .right {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
   }
 
   .answer {
