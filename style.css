@@ -3,9 +3,13 @@
   font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100svh;
   background: linear-gradient(135deg, #eef2ff, #fdf2f8, #ecfeff);
   display: flex;
   justify-content: center;
@@ -38,6 +42,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .score {
@@ -61,6 +66,7 @@ body {
   max-width: 100%;             
   flex-shrink: 1;               
   transition: opacity 0.2s ease, transform 0.2s ease;
+  min-width: 0;
 }
 
 .hidden {
@@ -135,7 +141,7 @@ body {
 }
 #flag {
  position: absolute;
-  top: 14px;
+  top: 8px;
   right: 14px;
   background: none;
   border: none;
@@ -172,7 +178,7 @@ body {
   }
 
   .answer {
-    text-align: left;
+    text-align: left; 
     max-width: 70%;            
     flex-shrink: 1;            
     white-space: nowrap;       
