@@ -166,7 +166,7 @@ body {
     font-size: 36px;
   }
   .top-row {
-    flex-direction: column;     
+    flex-direction: row;     
     align-items: flex-start;
     gap: 6px;             
   }
