@@ -47,7 +47,6 @@ body {
 }
 
 .answer {
-  max-width: 60%;
   padding: 8px 14px;
   border-radius: 999px;
   background: linear-gradient(135deg, #fde68a, #f59e0b);
@@ -58,7 +57,10 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);       
+  text-overflow: ellipsis;     
+  max-width: 100%;             
+  flex-shrink: 1;               
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -131,6 +133,28 @@ body {
   transform: translateY(0);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+#flag {
+  color: #ccc; 
+  font-size: 30px;
+  transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+#flag.yellow {
+  color: #FFD700;
+}
+#flag:hover {
+  transform: translateY(-5px);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+  min-width: 0; 
+  justify-content: flex-end; 
+}
+
 
 @media (max-width: 480px) {
   .buttons button {

@@ -1,10 +1,10 @@
-
 const enterB = document.getElementById("enter");
 const answerB = document.getElementById("answer");
 const audioB = document.getElementById("audio");
 const resetB = document.getElementById("reset");
 const sentenceB = document.getElementById("sentence");
 const definitionB = document.getElementById("definition");
+const flagB = document.getElementById("flag");
 
 const textInput = document.getElementById("textInput");
 const scoreDisplay = document.getElementById("score");
@@ -21,6 +21,10 @@ let wordsArray = [];
 let index;
 let score =[0,0]
 let point = true; 
+let wrongs = [];
+let flags = [];
+
+
 
 Papa.parse("words.csv", {
   download: true,
@@ -33,6 +37,7 @@ Papa.parse("words.csv", {
 
 function run() {
     random();
+    loadData(); 
     speak(wordsArray[index].Word);
 
     enterB.addEventListener("click", () => {
@@ -60,6 +65,16 @@ function run() {
         submit(value.slice(0, value.length-3).trim());  
     }
     });
+    flagB.addEventListener("click", () => {
+        flagB.classList.toggle("yellow");
+        if (flags.includes(wordsArray[index].Word)) {
+            flags = flags.filter(word => word !== wordsArray[index].Word);
+        } else {
+            flags.push(wordsArray[index].Word);
+        }
+        saveData();
+    });
+
 
     function random () {
         index = Math.floor(Math.random() * wordsArray.length);
@@ -87,15 +102,49 @@ function run() {
             point = false;
             wrongSound.play();
             textInput.value = answer;
+            if (!wrongs.includes(wordsArray[index].Word)) {
+                wrongs.push(wordsArray[index].Word);
+            }
         }
         setTimeout(() => {
         speak(wordsArray[index].Word);
         }, 1200);
 
         if(score[1] > 0){
-            scoreDisplay.innerText = score[0] + "/" + score[1] + " = " + (Math.round(((score[0]/score[1])*100).toFixed(2))) + "%";
-        } 
+            scoreDisplay.innerText = score[0] + "/" + score[1] + " = " + (Math.round(((score[0]/score[1])*100))) + "%";
+        }
+        if(flags.includes(wordsArray[index].Word)) {
+            flagB.classList.add("yellow");
+        } else {
+            flagB.classList.remove("yellow");
+        }
+        saveData(); 
     }
+    function saveData() {
+    const data = {
+        score: score,                 
+        wrongs: wrongs,
+        flags: flags
+    };
+    localStorage.setItem("davejuguemosData", JSON.stringify(data)); 
+}
+    function loadData() {
+    const savedData = localStorage.getItem("davejuguemosData");
+
+    if (savedData) {
+        const data = JSON.parse(savedData);
+
+        score = data.score || [0,0];
+        wrongs = data.wrongs || [];   
+        flags = data.flags || [];     
+    } else {
+        score = [0,0];
+        wrongs = [];
+        flags = [];
+    }
+}
+
+
 }
 function showAnswer(answer) {
   answerText.textContent = answer;   
