@@ -164,15 +164,20 @@ body {
   .title {
     font-size: 36px;
   }
-
-  .top-row {
-    flex-direction: column;
-    align-items: flex-start;
+.top-row {
+    flex-direction: row; 
+    align-items: center; 
+    justify-content: space-between; 
   }
 
   .answer {
-    max-width: 100%;
     text-align: left;
+    max-width: 70%;
   }
+
+  #flag {
+    margin-left: auto; 
+  }
+  
 }
 
