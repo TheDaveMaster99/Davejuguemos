@@ -165,18 +165,23 @@ body {
     font-size: 36px;
   }
 .top-row {
-    flex-direction: row; 
-    align-items: center; 
+    flex-direction: row;     
+    align-items: center;      
     justify-content: space-between; 
+    gap: 8px;                 
   }
 
   .answer {
     text-align: left;
-    max-width: 70%;
+    max-width: 70%;            
+    flex-shrink: 1;            
+    white-space: nowrap;       
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   #flag {
-    margin-left: auto; 
+    flex-shrink: 0;             
   }
   
 }
