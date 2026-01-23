@@ -27,7 +27,7 @@
   <!-- Fonts / Styles -->
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   </head>
-  <body><div class="screen1">
+  <body><div class="screen1 hidden">
 
     <h1 class="title">Davejuguemos</h1>
 
@@ -53,8 +53,30 @@
 
   </div>
 
-  <div class="screen2 hidden">
-    
+  <div class="screen2">
+   <h1 class="title">Davejuguemos</h1>
+
+  <div class="menu-cards">
+
+    <button class="menu-card" data-target="filter">
+      <div class="card-title">Filter Words</div>
+      <div class="card-sub">Filter by starting letter, capital, and more</div>
+    </button>
+
+    <button class="menu-card" data-target="mode">
+      <div class="card-title">Mode</div>
+      <div class="card-sub">Choose from regular, ordered, time, and practice modes</div>
+    </button>
+
+    <button class="menu-card" data-target="review">
+      <div class="card-title">Review</div>
+      <div class="card-sub">See flagged and missed words</div>
+    </button>
+
+  </div>
+
+  <button id="begin" class="begin-btn">Begin</button>
+
   </div>
 </body>
 </html>   

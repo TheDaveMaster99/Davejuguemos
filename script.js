@@ -1,10 +1,12 @@
 const enterB = document.getElementById("enter");
 const answerB = document.getElementById("answer");
 const audioB = document.getElementById("audio");
-const resetB = document.getElementById("reset");
+const resetB = document.getElementById("back");
 const sentenceB = document.getElementById("sentence");
 const definitionB = document.getElementById("definition");
 const flagB = document.getElementById("flag");
+const beginB = document.getElementById("begin");
+const backB = document.getElementById("back");
 
 const textInput = document.getElementById("textInput");
 const scoreDisplay = document.getElementById("score");
@@ -65,7 +67,6 @@ function run() {
     random();
     loadData();
     updateScore(); 
-    speak(wordsArray[index].Word);
 
     enterB.addEventListener("click", () => {
         submit(textInput.value.trim());
@@ -97,6 +98,17 @@ function run() {
         }
         saveData();
     });
+
+    beginB.addEventListener("click", () => {
+        document.querySelector(".screen2").classList.add("hidden");
+        document.querySelector(".screen1").classList.remove("hidden");
+        speak(wordsArray[index].Word);
+    });
+    backB.addEventListener("click", () => {
+        document.querySelector(".screen1").classList.add("hidden");
+        document.querySelector(".screen2").classList.remove("hidden");
+    });
+
 
 
     function random () {
