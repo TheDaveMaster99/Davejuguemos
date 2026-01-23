@@ -73,11 +73,6 @@ function run() {
     answerB.addEventListener("click", () => {
         showAnswer(wordsArray[index].Word);
     });
-    resetB.addEventListener("click", () => {
-        score = [0,0];
-        scoreDisplay.innerText = "0/0 = 0%";
-        saveData();
-    });
     audioB.addEventListener("click", () => {
         speak(wordsArray[index].Word);
     });
