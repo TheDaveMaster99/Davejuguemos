@@ -12,10 +12,36 @@ const scoreDisplay = document.getElementById("score");
 const wholeAnswer = document.querySelector(".answer");
 const answerText = document.getElementById("answer-text");
 
-const correctSound = new Audio("correct.mp3");
-const wrongSound = new Audio("wrong.mp3");
-correctSound.preload = "auto";
-wrongSound.preload = "auto";
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+let correctBuffer = null;
+let wrongBuffer = null;
+let audioUnlocked = false;
+
+async function loadSound(url) {
+    const res = await fetch(url);
+    const arrayBuffer = await res.arrayBuffer();
+    return await audioCtx.decodeAudioData(arrayBuffer);
+}
+
+async function initAudio() {
+    correctBuffer = await loadSound("correct.mp3");
+    wrongBuffer = await loadSound("wrong.mp3");
+}
+
+// Unlock audio on first user interaction
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    audioCtx.resume();
+}
+
+document.addEventListener("click", unlockAudio, { once: true });
+document.addEventListener("keydown", unlockAudio, { once: true });
+
+initAudio();
+
 
 let wordsArray = [];
 let index;
@@ -99,18 +125,17 @@ function run() {
             textInput.value = "";
             random();
             hideAnswer();
-            correctSound.play();
+            playCorrect();
         } else {
             point = false;
-            wrongSound.play();
+            playWrong();
             textInput.value = answer;
             if (!wrongs.includes(wordsArray[index].Word)) {
                 wrongs.push(wordsArray[index].Word);
             }
         }
-        setTimeout(() => {
-        speak(wordsArray[index].Word);
-        }, 1200);
+
+        setTimeout(() => speak(wordsArray[index].Word), 1200);
 
        updateScore();
         if(flags.includes(wordsArray[index].Word)) {
@@ -157,5 +182,20 @@ function run() {
     function hideAnswer() {
         wholeAnswer.classList.add("hidden"); 
     }
-}
 
+    function playCorrect() {
+        if (!correctBuffer) return;
+            const src = audioCtx.createBufferSource();
+            src.buffer = correctBuffer;
+            src.connect(audioCtx.destination);
+            src.start();
+    }
+
+    function playWrong() {
+        if (!wrongBuffer) return;
+            const src = audioCtx.createBufferSource();
+            src.buffer = wrongBuffer;
+            src.connect(audioCtx.destination);
+        src.start();
+    }
+}
