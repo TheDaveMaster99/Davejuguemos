@@ -27,7 +27,7 @@
   <!-- Fonts / Styles -->
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   </head>
-  <body><div class="screen1 hidden">
+  <body><div class="screen screen1 hidden">
 
     <h1 class="title">Davejuguemos</h1>
 
@@ -53,7 +53,7 @@
 
   </div>
 
-  <div class="screen2">
+  <div class="screen screen2">
    <h1 class="title">Davejuguemos</h1>
 
   <div class="menu-cards">
@@ -63,12 +63,12 @@
       <div class="card-sub">Filter by starting letter, capital, and more</div>
     </button>
 
-    <button class="menu-card" data-target="mode">
+    <button class="menu-card" data-target="mode" id="mode">
       <div class="card-title">Mode</div>
       <div class="card-sub">Choose from regular, ordered, time, and practice modes</div>
     </button>
 
-    <button class="menu-card" data-target="review">
+    <button class="menu-card" data-target="review" id="review">
       <div class="card-title">Review</div>
       <div class="card-sub">See flagged and missed words</div>
     </button>
@@ -78,5 +78,80 @@
   <button id="begin" class="begin-btn">Begin</button>
 
   </div>
+  <div class="screen screen-mode hidden">
+
+  <h1 class="title">Davejuguemos</h1>
+
+  <div class="mode-list">
+
+    <button class="mode-card" data-mode="regular">
+      <div class="mode-title">Regular</div>
+      <div class="mode-desc">Random words</div>
+    </button>
+
+    <button class="mode-card" data-mode="ordered">
+      <div class="mode-title">Ordered</div>
+      <div class="mode-desc">Go in order</div>
+    </button>
+
+    <button class="mode-card" data-mode="timed">
+      <div class="mode-title">Timed</div>
+      <div class="mode-desc">Have a certain amount of time to answer</div>
+    </button>
+
+    <button class="mode-card" data-mode="practice">
+      <div class="mode-title">Practice</div>
+      <div class="mode-desc">Run a practice</div>
+    </button>
+
+  </div>
+
+  <button class="back-btn" id="back2">Back</button>
+
+</div>
+<div class="screen screen-dictionary hidden">
+
+  <h1 class="title">Davejuguemos</h1>
+
+  <div class="dict-card">
+    <div class="dict-word" id="dictWord">Word</div>
+
+    <div class="dict-section">
+      <strong>Definition</strong>
+      <p id="dictDefinition"></p>
+    </div>
+
+    <div class="dict-section">
+      <strong>Sentence</strong>
+      <p id="dictSentence"></p>
+    </div>
+  </div>
+
+  <div class="dict-controls">
+    <button id="dictPrev">←</button>
+    <button id="dictSpeak">Say</button>
+    <button id="dictNext">→</button>
+  </div>
+
+  <button class="back-btn" id="dictBack">Back</button>
+
+</div>
+<div class="screen screen-review hidden">
+
+  <h1 class="title">Review Words</h1>
+
+  <div class="review-toggle">
+    <button id="showMissed" class="active">Missed Words</button>
+    <button id="showFlagged">Flagged Words</button>
+  </div>
+
+  <div class="review-list">
+    <!-- Words will be dynamically inserted here -->
+  </div>
+
+  <button class="back-btn" id="reviewBack">Back</button>
+
+</div>
+
 </body>
 </html>   
