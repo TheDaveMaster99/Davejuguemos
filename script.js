@@ -230,6 +230,12 @@ function run() {
             showDictWord();
         }
     });
+    textInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); 
+            submit(textInput.value.trim());   
+        }
+    });
     //Screen 1 functions
 
     function random () {
