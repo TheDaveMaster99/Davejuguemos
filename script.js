@@ -13,14 +13,29 @@ const dictBackB = document.getElementById("dictBack");
 const filterB = document.getElementById("filter");
 const filterBackB = document.getElementById("filterBack");
 const orderedB = document.getElementById("ordered");
+const dictSpeakB = document.getElementById("dictSpeak");
+const dictPrevB = document.getElementById("dictPrev");
+const dictNextB = document.getElementById("dictNext");
+const practiceBackB = document.getElementById("practiceBack");
 
 const debugP = document.getElementById("debug");
 
 const modeOptions = document.getElementById("modeOptions");
 
+const practiceGrid = document.getElementById("practiceGrid");
+
 const orderedStartInput = document.getElementById("orderedStartLetter");
 const textInput = document.getElementById("textInput");
 const scoreDisplay = document.getElementById("score");
+
+const showMissedB = document.getElementById("showMissed");
+const showFlaggedB = document.getElementById("showFlagged");
+const reviewList = document.querySelector(".review-list");
+const reviewBackB = document.getElementById("reviewBack");
+
+const dictWordEl = document.getElementById("dictWord");
+const dictDefinitionEl = document.getElementById("dictDefinition");
+const dictSentenceEl = document.getElementById("dictSentence");
 
 const wholeAnswer = document.querySelector(".answer");
 const answerText = document.getElementById("answer-text");
@@ -32,29 +47,6 @@ let correctBuffer = null;
 let wrongBuffer = null;
 let audioUnlocked = false;
 
-async function loadSound(url) {
-    const res = await fetch(url);
-    const arrayBuffer = await res.arrayBuffer();
-    return await audioCtx.decodeAudioData(arrayBuffer);
-}
-
-async function initAudio() {
-    correctBuffer = await loadSound("correct.mp3");
-    wrongBuffer = await loadSound("wrong.mp3");
-}
-
-function unlockAudio() {
-    if (audioUnlocked) return;
-    audioUnlocked = true;
-    audioCtx.resume();
-}
-
-document.addEventListener("click", unlockAudio, { once: true });
-document.addEventListener("keydown", unlockAudio, { once: true });
-
-initAudio();
-
-
 let ogWordsArray = [];
 let wordsArray = [];
 let index = 0;
@@ -64,9 +56,10 @@ let wrongs = [];
 let flags = [];
 let mode = "regular";
 let screen = ".screen2";
-let dictBackToggle;
-
-
+let dictBackToggle = false;
+let reviewMode = "missed";
+let reviewWords = [];  
+let dictIndex = 0;  
 
 Papa.parse("words.csv", {
   download: true,
@@ -78,30 +71,9 @@ Papa.parse("words.csv", {
 });
 
 function run() {
-    const savedMode = localStorage.getItem("davejuguemosMode");
-    if (savedMode) {
-        mode = savedMode;
-        document
-        .querySelector(`.mode-card[data-mode="${savedMode}"]`)
-        ?.classList.add("active");
-        if (mode === "ordered") {
-            modeOptions.classList.remove("hidden"); 
-        }
-    }
-    wordsArray = structuredClone(ogWordsArray);
-    if (mode === "regular") {
-        random();
-    } else if (mode === "ordered") {
-        loadOrderedIndex();
-    }
-    const orderedStartLetter = localStorage.getItem("orderedStartLetter");
-    if (orderedStartLetter) {
-        orderedStartInput.value = orderedStartLetter;
-    }
-    loadData();
-    loadScreen();
-    updateScore();
+    initialLoading();
     
+    //Event listeners
     enterB.addEventListener("click", () => {
         submit(textInput.value.trim());
     });
@@ -113,6 +85,9 @@ function run() {
     });
     audioB.addEventListener("click", () => {
         speak(wordsArray[index].Word);
+    });
+    practiceBackB.addEventListener("click", () => {
+        setScreen(".screen2");
     });
      definitionB.addEventListener("click", () => {
         speak(wordsArray[index].Definition);
@@ -160,8 +135,11 @@ function run() {
             }
 
             if (index > -1) {
-                localStorage.setItem("orderedStartLetter", orderedStartInput.value);
-            } 
+                saveOrderedLetters();
+            } else {
+                orderedStartInput.value = "";
+                index = 0;
+            }
         }
     });
      dictBackB.addEventListener("click", () => {
@@ -178,9 +156,81 @@ function run() {
     modeB.addEventListener("click", () => {
         setScreen(".screen-mode");
     });
+    document.querySelectorAll(".mode-card").forEach(card => {
+        card.addEventListener("click", () => {
+            mode = card.dataset.mode;
+
+            document.querySelectorAll(".mode-card").forEach(c =>
+                c.classList.remove("active")
+                );
+
+            card.classList.add("active");
+
+            saveMode();
+            if (mode === "ordered") {
+                modeOptions.classList.remove("hidden");
+            } else {
+                modeOptions.classList.add("hidden");
+            }
+            if (mode === "regular") {
+                random();
+            } else if (mode === "ordered") {
+              loadOrderedIndex();
+            }
+
+        });
+    });
     reviewB.addEventListener("click", () => {
+        loadReviewMode();
+        renderReview();
         setScreen(".screen-review");
     });
+
+    showMissedB.addEventListener("click", () => {
+        reviewMode = "missed";
+        showMissedB.classList.add("active");
+        showFlaggedB.classList.remove("active");
+        saveReviewMode();
+        renderReview();
+    });
+    showFlaggedB.addEventListener("click", () => {
+        reviewMode = "flagged";
+        showFlaggedB.classList.add("active");
+        showMissedB.classList.remove("active");
+        saveReviewMode();
+        renderReview();
+    });
+     reviewBackB.addEventListener("click", () => {
+   
+        reviewList.querySelectorAll(".review-item button.removed").forEach(btn => {
+            const word = btn.dataset.word;
+            if(reviewMode === "missed") {
+                wrongs = wrongs.filter(w => w !== word);
+            } else {
+                flags = flags.filter(w => w !== word);
+            }
+        });
+        saveData();
+        setScreen(".screen2");
+    });
+    dictSpeakB.addEventListener("click", () => {
+       const text = dictWordEl.textContent;
+        speak(text);
+    });
+
+    dictPrevB.addEventListener("click", () => {
+        if(dictIndex > 0) {
+            dictIndex--;
+            showDictWord();
+        }
+    });
+    dictNextB.addEventListener("click", () => {
+        if(dictIndex < reviewWords.length - 1) {
+            dictIndex++;
+            showDictWord();
+        }
+    });
+    //Screen 1 functions
 
     function random () {
         if (mode === "regular") {
@@ -193,15 +243,10 @@ function run() {
         }
         debugP.innerText = "Index: " + index + " | Word: " + wordsArray[index].Word + "| Mode: " + mode;
         saveOrderedIndex();
+        hideAnswer();
     }
-    function speak(text) {
-        speechSynthesis.cancel();
-        const speech = new SpeechSynthesisUtterance(text);
-        speech.lang = 'en-US'; 
-        speech.pitch = 1; 
-        speech.rate = 0.75; 
-        speechSynthesis.speak(speech);
-        };
+
+
     function submit(answer) { 
         if (answer === wordsArray[index].Word) {
             if (point) {
@@ -246,106 +291,8 @@ function run() {
         wholeAnswer.classList.add("hidden"); 
     }
 
-    function playCorrect() {
-        if (!correctBuffer) return;
-            const src = audioCtx.createBufferSource();
-            src.buffer = correctBuffer;
-            src.connect(audioCtx.destination);
-            src.start();
-    }
 
-    function playWrong() {
-        if (!wrongBuffer) return;
-        const src = audioCtx.createBufferSource();
-        src.buffer = wrongBuffer;
-        src.connect(audioCtx.destination);
-        src.start();
-    }
-
-    document.querySelectorAll(".mode-card").forEach(card => {
-        card.addEventListener("click", () => {
-            mode = card.dataset.mode;
-
-            document.querySelectorAll(".mode-card").forEach(c =>
-                c.classList.remove("active")
-                );
-
-            card.classList.add("active");
-
-            localStorage.setItem("davejuguemosMode", mode);
-            if (mode === "ordered") {
-                modeOptions.classList.remove("hidden");
-            } else {
-                modeOptions.classList.add("hidden");
-            }
-
-        });
-    });
-
-
-  function setScreen(screen1) {
-        document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
-        document.querySelector(screen1).classList.remove("hidden");
-        screen = screen1;
-        saveScreen();
-        if (screen1 === ".screen-review") {
-            dictBackToggle = true;
-        } else if (screen1 === ".screen-practice") {
-            dictBackToggle = false;
-        }
-
-    }
-    const showMissedB = document.getElementById("showMissed");
-    const showFlaggedB = document.getElementById("showFlagged");
-    const reviewList = document.querySelector(".review-list");
-    const reviewBackB = document.getElementById("reviewBack");
-
-    let reviewMode = "missed"; 
-
-    reviewB.addEventListener("click", () => {
-        loadReviewMode();
-        renderReview();
-        setScreen(".screen-review");
-    });
-
-    showMissedB.addEventListener("click", () => {
-        reviewMode = "missed";
-        showMissedB.classList.add("active");
-        showFlaggedB.classList.remove("active");
-        saveReviewMode();
-        renderReview();
-    });
-    showFlaggedB.addEventListener("click", () => {
-        reviewMode = "flagged";
-        showFlaggedB.classList.add("active");
-        showMissedB.classList.remove("active");
-        saveReviewMode();
-        renderReview();
-    });
-
-    reviewBackB.addEventListener("click", () => {
-   
-        reviewList.querySelectorAll(".review-item button.removed").forEach(btn => {
-            const word = btn.dataset.word;
-            if(reviewMode === "missed") {
-                wrongs = wrongs.filter(w => w !== word);
-            } else {
-                flags = flags.filter(w => w !== word);
-            }
-        });
-        saveData();
-        setScreen(".screen2");
-    });
-
-    const dictWordEl = document.getElementById("dictWord");
-    const dictDefinitionEl = document.getElementById("dictDefinition");
-    const dictSentenceEl = document.getElementById("dictSentence");
-    const dictSpeakB = document.getElementById("dictSpeak");
-    const dictPrevB = document.getElementById("dictPrev");
-    const dictNextB = document.getElementById("dictNext");
-    let reviewWords = [];  
-    let dictIndex = 0;    
-
+    //Dict Functions
 
     function openDictFromReview(idx) {
         dictIndex = idx;
@@ -353,7 +300,6 @@ function run() {
         showDictWord();
         setScreen(".screen-dictionary");
     }
-
 
     function showDictWord() {
         const wordObj = ogWordsArray.find(w => w.Word === reviewWords[dictIndex]);
@@ -370,25 +316,7 @@ function run() {
         dictNextB.style.background = dictNextB.disabled ? "#d1d5db" : "linear-gradient(135deg, #6366f1, #4f46e5)";
     }
 
-
-    dictSpeakB.addEventListener("click", () => {
-       const text = dictWordEl.textContent;
-        speak(text);
-    });
-
-    dictPrevB.addEventListener("click", () => {
-        if(dictIndex > 0) {
-            dictIndex--;
-            showDictWord();
-        }
-    });
-    dictNextB.addEventListener("click", () => {
-        if(dictIndex < reviewWords.length - 1) {
-            dictIndex++;
-            showDictWord();
-        }
-    });
-
+    //Review functions
 
     function renderReview() {
         reviewList.innerHTML = "";
@@ -467,19 +395,18 @@ function run() {
         });
 
     }
-
     function getWordFromOG(word) {
         return ogWordsArray.find(
             w => w.Word.toLowerCase() === word.toLowerCase()
         );
     }
+
+    //Practice functions
     
     function getRandomWords(count) {
         const shuffled = [...wordsArray].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, count).map(w => w.Word);
     }
-    const practiceGrid = document.getElementById("practiceGrid");
-    const practiceBackB = document.getElementById("practiceBack");
 
     function startPractice() {
         reviewWords = getRandomWords(Math.min(9, wordsArray.length)); 
@@ -503,28 +430,7 @@ function run() {
 
         setScreen(".screen-practice");
     }
-
-    practiceBackB.addEventListener("click", () => {
-        setScreen(".screen2");
-    });
-    const filterCheckboxes = document.querySelectorAll('.filter-options input[type="checkbox"]');
-    document.querySelectorAll('.filter-options input[type="checkbox"]').forEach(checkbox => {
-        const saved = localStorage.getItem(checkbox.id);
-        if (saved !== null) checkbox.checked = saved === 'true';
-        checkbox.addEventListener('change', () => {
-            localStorage.setItem(checkbox.id, checkbox.checked);
-            filterWords();
-        });
-    });
-
-    filterWords();
-
-    document.getElementById('resetFilterBtn').addEventListener('click', () => {
-        filterCheckboxes.forEach(box => {
-            box.checked = false;
-        localStorage.removeItem(box.id); 
-        });
-    });
+    
     //Word filtering
     function filterWords() {
     
@@ -561,10 +467,112 @@ function run() {
         if (index >= wordsArray.length) {
             random();
         }
-
+        hideAnswer();
     } 
 
+    //Sound effects
+
+   function speak(text) {
+        speechSynthesis.cancel();
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = 'en-US'; 
+        speech.pitch = 1; 
+        speech.rate = 0.75; 
+        speechSynthesis.speak(speech);
+        };
+    
+    function playCorrect() {
+        if (!correctBuffer) return;
+            const src = audioCtx.createBufferSource();
+            src.buffer = correctBuffer;
+            src.connect(audioCtx.destination);
+            src.start();
+    }
+
+    function playWrong() {
+        if (!wrongBuffer) return;
+        const src = audioCtx.createBufferSource();
+        src.buffer = wrongBuffer;
+        src.connect(audioCtx.destination);
+        src.start();
+    }
+
+    async function loadSound(url) {
+        const res = await fetch(url);
+        const arrayBuffer = await res.arrayBuffer();
+        return await audioCtx.decodeAudioData(arrayBuffer);
+    }
+
+    async function initAudio() {
+        correctBuffer = await loadSound("correct.mp3");
+        wrongBuffer = await loadSound("wrong.mp3");
+    }
+
+    function unlockAudio() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        audioCtx.resume();
+    }
+    document.addEventListener("click", unlockAudio, { once: true });
+    document.addEventListener("keydown", unlockAudio, { once: true }); 
+
     // Data saving/loading
+
+    function initialLoading() {
+        initAudio();
+        loadMode();
+        wordsArray = structuredClone(ogWordsArray);
+        loadOrderedLetters();
+        loadData();
+        loadScreen();
+        updateScore();
+        loadCheckboxes();
+        filterWords();
+        if (mode === "regular") {
+            random();
+        } else if (mode === "ordered") {
+            loadOrderedIndex();
+        }
+    
+    }
+    function loadCheckboxes() {
+        const boxes = document.querySelectorAll('.filter-options input[type="checkbox"]');
+
+        boxes.forEach(checkbox => {
+            const saved = localStorage.getItem(checkbox.id);
+            if (saved !== null) checkbox.checked = saved === 'true';
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+                filterWords();
+            });
+        });
+    }
+
+    function saveOrderedLetters() {
+        localStorage.setItem("orderedStartLetter", orderedStartInput.value);
+    }
+    function loadOrderedLetters() {
+         const orderedStartLetter = localStorage.getItem("orderedStartLetter");
+        if (orderedStartLetter) {
+            orderedStartInput.value = orderedStartLetter;
+    }
+
+    }
+    function saveMode() {
+        localStorage.setItem("davejuguemosMode", mode);
+    }
+    function loadMode() {
+        const savedMode = localStorage.getItem("davejuguemosMode");
+        if (savedMode) {
+            mode = savedMode;
+            document
+            .querySelector(`.mode-card[data-mode="${savedMode}"]`)
+            ?.classList.add("active");
+            if (mode === "ordered") {
+                modeOptions.classList.remove("hidden"); 
+            }
+        }
+    }
     function saveReviewMode() {
         const data3 = {
             reviewMode: reviewMode
@@ -648,6 +656,18 @@ function run() {
         setScreen(screen);
     }
 
-    
+    //Misc functions
+      function setScreen(screen1) {
+        document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+        document.querySelector(screen1).classList.remove("hidden");
+        screen = screen1;
+        saveScreen();
+        if (screen1 === ".screen-review") {
+            dictBackToggle = true;
+        } else if (screen1 === ".screen-practice") {
+            dictBackToggle = false;
+        }
+
+    }
 }
 
