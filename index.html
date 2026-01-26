@@ -58,7 +58,7 @@
 
   <div class="menu-cards">
 
-    <button class="menu-card" data-target="filter">
+    <button class="menu-card" data-target="filter" id="filter">
       <div class="card-title">Filter Words</div>
       <div class="card-sub">Filter by starting letter, capital, and more</div>
     </button>
@@ -89,21 +89,25 @@
       <div class="mode-desc">Random words</div>
     </button>
 
-    <button class="mode-card" data-mode="ordered">
+    <button class="mode-card" data-mode="ordered" id="ordered">
       <div class="mode-title">Ordered</div>
-      <div class="mode-desc">Go in order</div>
-    </button>
-
-    <button class="mode-card" data-mode="timed">
-      <div class="mode-title">Timed</div>
-      <div class="mode-desc">Have a certain amount of time to answer</div>
+      <div class="mode-desc">Count up from a starting word</div>
     </button>
 
     <button class="mode-card" data-mode="practice">
       <div class="mode-title">Practice</div>
-      <div class="mode-desc">Run a practice</div>
+      <div class="mode-desc">Generate nine random words for practices</div>
     </button>
+    <div class="mode-options hidden" id="modeOptions">
+  <p class="mode-help">
+    Starting word or letter: 
+  </p>
+  <input
+    type="text"
+    id="orderedStartLetter"
 
+  />
+</div>
   </div>
 
   <button class="back-btn" id="back2">Back</button>
@@ -138,7 +142,7 @@
 </div>
 <div class="screen screen-review hidden">
 
-  <h1 class="title">Review Words</h1>
+  <h1 class="title">Davejuguemos</h1>
 
   <div class="review-toggle">
     <button id="showMissed" class="active">Missed Words</button>
@@ -146,12 +150,58 @@
   </div>
 
   <div class="review-list">
-    <!-- Words will be dynamically inserted here -->
+    
   </div>
 
   <button class="back-btn" id="reviewBack">Back</button>
 
 </div>
+<div class="screen screen-practice hidden">
+  <h1 class="title">Davejuguemos</h1>
 
+  <div class="practice-grid" id="practiceGrid"></div>
+
+  <button class="back-btn" id="practiceBack">Back</button>
+</div>
+<div class="screen screen-filter hidden">
+  <h1 class="title">Davejuguemos</h1>
+
+  <div class="filter-options">
+    <label>
+      <input type="checkbox" id="filterHyphen">
+      Contains Hyphens
+    </label>
+
+    <label>
+      <input type="checkbox" id="filterSpace">
+      Contains Spaces
+    </label>
+
+    <label>
+      <input type="checkbox" id="filterCaps">
+      Contains Capitals
+    </label>
+
+    <label>
+      <input type="checkbox" id="filterAble">
+      Ends with able/ible
+    </label>
+
+    <label>
+      <input type="checkbox" id="filterStarred">
+      Starred
+    </label>
+
+    <label>
+      <input type="checkbox" id="filterMissed">
+      Missed
+    </label>
+  </div>
+
+  <div class="filter-buttons">
+    <button class="back-btn" id="filterBack">Back</button>
+  </div>
+</div>
+<p class="hidden"id="debug">hello</p>
 </body>
 </html>   
