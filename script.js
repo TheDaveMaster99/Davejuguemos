@@ -300,7 +300,7 @@ function run() {
     const reviewList = document.querySelector(".review-list");
     const reviewBackB = document.getElementById("reviewBack");
 
-    let reviewMode = "missed"; // default
+    let reviewMode = "missed"; 
 
     reviewB.addEventListener("click", () => {
         loadReviewMode();
@@ -482,7 +482,7 @@ function run() {
     const practiceBackB = document.getElementById("practiceBack");
 
     function startPractice() {
-        reviewWords = getRandomWords(Math.min(9, wordsArray.length)); // 🔥 reuse same array
+        reviewWords = getRandomWords(Math.min(9, wordsArray.length)); 
         dictIndex = 0;
 
         practiceGrid.innerHTML = "";
