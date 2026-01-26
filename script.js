@@ -232,27 +232,6 @@ function run() {
         }
         saveData(); 
     }
-    function saveData() {
-        const data = {
-            score: score,                 
-            wrongs: wrongs,
-            flags: flags
-        };
-        localStorage.setItem("davejuguemosData", JSON.stringify(data)); 
-    }
-    function loadData() {
-        const savedData = localStorage.getItem("davejuguemosData");
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            score = data.score || [0,0];
-            wrongs = data.wrongs || [];   
-            flags = data.flags || [];     
-        } else {
-            score = [0,0];
-            wrongs = [];
-            flags = [];
-        }
-    }
     function updateScore() {
         if(score[1] > 0) {
             scoreDisplay.innerText = score[0] + "/" + score[1] + " = " + (Math.round(((score[0]/score[1])*100))) + "%";
@@ -303,27 +282,6 @@ function run() {
         });
     });
 
-    function saveScreen() {
-        const data2 = {
-            screen: screen
-        };                
-        localStorage.setItem("data", JSON.stringify(data2)); 
-    }
-    function loadScreen() {
-        const savedData2 = localStorage.getItem("data");
-
-        if (savedData2) {
-            const data2 = JSON.parse(savedData2);
-
-            screen = data2.screen || ".screen2";
-        } else {
-            screen = ".screen2";
-        } 
-        if (screen === ".screen-review" || screen === ".screen-dictionary" || screen === ".screen-practice") {
-            screen = ".screen2";
-        }
-        setScreen(screen);
-    }
 
   function setScreen(screen1) {
         document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
@@ -344,30 +302,6 @@ function run() {
 
     let reviewMode = "missed"; // default
 
-    function saveReviewMode() {
-        const data3 = {
-            reviewMode: reviewMode
-        };                
-        localStorage.setItem("reviewData", JSON.stringify(data3)); 
-    }
-    function loadReviewMode() {
-        const savedData3 = localStorage.getItem("reviewData");
-
-        if (savedData3) {
-            const data3 = JSON.parse(savedData3);
-
-            reviewMode = data3.reviewMode || "missed";
-            if(reviewMode === "flagged") {
-                showFlaggedB.classList.add("active");
-                showMissedB.classList.remove("active");
-            } else {
-                showMissedB.classList.add("active");
-                showFlaggedB.classList.remove("active");
-            }
-        } else {
-            reviewMode = "missed";
-        }
-    }
     reviewB.addEventListener("click", () => {
         loadReviewMode();
         renderReview();
@@ -533,6 +467,12 @@ function run() {
         });
 
     }
+
+    function getWordFromOG(word) {
+        return ogWordsArray.find(
+            w => w.Word.toLowerCase() === word.toLowerCase()
+        );
+    }
     
     function getRandomWords(count) {
         const shuffled = [...wordsArray].sort(() => Math.random() - 0.5);
@@ -585,7 +525,7 @@ function run() {
         localStorage.removeItem(box.id); 
         });
     });
-
+    //Word filtering
     function filterWords() {
     
         wordsArray = structuredClone(ogWordsArray);
@@ -623,6 +563,32 @@ function run() {
         }
 
     } 
+
+    // Data saving/loading
+    function saveReviewMode() {
+        const data3 = {
+            reviewMode: reviewMode
+        };                
+        localStorage.setItem("reviewData", JSON.stringify(data3)); 
+    }
+    function loadReviewMode() {
+        const savedData3 = localStorage.getItem("reviewData");
+
+        if (savedData3) {
+            const data3 = JSON.parse(savedData3);
+
+            reviewMode = data3.reviewMode || "missed";
+            if(reviewMode === "flagged") {
+                showFlaggedB.classList.add("active");
+                showMissedB.classList.remove("active");
+            } else {
+                showMissedB.classList.add("active");
+                showFlaggedB.classList.remove("active");
+            }
+        } else {
+            reviewMode = "missed";
+        }
+    }
     function saveOrderedIndex() {
         if (mode !== "ordered") return;
         localStorage.setItem("orderedIndex", index);
@@ -639,10 +605,49 @@ function run() {
     
         index = Math.max(0, Math.min(parsed, wordsArray.length - 1));
     }
-    function getWordFromOG(word) {
-        return ogWordsArray.find(
-            w => w.Word.toLowerCase() === word.toLowerCase()
-        );
+    function saveData() {
+        const data = {
+            score: score,                 
+            wrongs: wrongs,
+            flags: flags
+        };
+        localStorage.setItem("davejuguemosData", JSON.stringify(data)); 
     }
+    function loadData() {
+        const savedData = localStorage.getItem("davejuguemosData");
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            score = data.score || [0,0];
+            wrongs = data.wrongs || [];   
+            flags = data.flags || [];     
+        } else {
+            score = [0,0];
+            wrongs = [];
+            flags = [];
+        }
+    }
+    function saveScreen() {
+        const data2 = {
+            screen: screen
+        };                
+        localStorage.setItem("data", JSON.stringify(data2)); 
+    }
+    function loadScreen() {
+        const savedData2 = localStorage.getItem("data");
+
+        if (savedData2) {
+            const data2 = JSON.parse(savedData2);
+
+            screen = data2.screen || ".screen2";
+        } else {
+            screen = ".screen2";
+        } 
+        if (screen === ".screen-review" || screen === ".screen-dictionary" || screen === ".screen-practice") {
+            screen = ".screen2";
+        }
+        setScreen(screen);
+    }
+
+    
 }
 
