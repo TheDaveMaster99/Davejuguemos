@@ -60,6 +60,7 @@ let dictBackToggle = false;
 let reviewMode = "missed";
 let reviewWords = [];  
 let dictIndex = 0;  
+let playerName = "Dave";
 
 Papa.parse("words.csv", {
   download: true,
@@ -265,7 +266,10 @@ function run() {
             hideAnswer();
             playCorrect();
         } else {
-            point = false;
+            if (point) {
+                point = false;
+                sendData();
+            }
             playWrong();
             textInput.value = answer;
             if (!wrongs.includes(wordsArray[index].Word)) {
@@ -675,5 +679,24 @@ function run() {
         }
 
     }
+    async function sendData() {
+        const data = {
+            name: playerName, 
+            word: wordsArray[index].Word,
+            score: score[0] / score[1],
+            total: score[1]
+          };
+        const response = await fetch("https://script.google.com/macros/s/AKfycbw1K1k7a5-T8uOF5zx_VHmCMpKaR-xCU5ujAZ9xrmrr0SyBLs3Me_rW0sjl4WpF2TST/exec", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+    }
 }
+
+
+
+
 
