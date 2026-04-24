@@ -253,7 +253,6 @@ function run() {
         hideAnswer();
     }
 
-
     function submit(answer) { 
         if (answer === wordsArray[index].Word) {
             if (point) {
@@ -678,21 +677,6 @@ function run() {
             dictBackToggle = false;
         }
 
-    }
-    async function sendData() {
-        const data = {
-            name: playerName, 
-            word: wordsArray[index].Word,
-            score: score[0] / score[1],
-            total: score[1]
-          };
-        const response = await fetch("https://script.google.com/macros/s/AKfycbw1K1k7a5-T8uOF5zx_VHmCMpKaR-xCU5ujAZ9xrmrr0SyBLs3Me_rW0sjl4WpF2TST/exec", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
     }
 }
 
