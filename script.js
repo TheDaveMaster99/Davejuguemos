@@ -45,7 +45,7 @@ const audioCtx = new AudioContext();
 
 let correctBuffer = null;
 let wrongBuffer = null;
-let audioUnlocked = false;
+//let audioUnlocked = false;
 
 let ogWordsArray = [];
 let wordsArray = [];
@@ -517,13 +517,13 @@ function run() {
         wrongBuffer = await loadSound("wrong.mp3");
     }
 
-    function unlockAudio() {
+    /*function unlockAudio() {
         if (audioUnlocked) return;
         audioUnlocked = true;
         audioCtx.resume();
     }
     document.addEventListener("click", unlockAudio, { once: true });
-    document.addEventListener("keydown", unlockAudio, { once: true }); 
+    document.addEventListener("keydown", unlockAudio, { once: true }); */
 
     // Data saving/loading
 
