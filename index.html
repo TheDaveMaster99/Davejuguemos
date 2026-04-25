@@ -27,7 +27,22 @@
   <!-- Fonts / Styles -->
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   </head>
-  <body><div class="screen screen1 hidden">
+  <body>
+  
+  <!-- List Selection Modal -->
+  <div class="modal hidden" id="listModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Add to List</h2>
+      <div class="list-options" id="listOptions"></div>
+      <div class="modal-input-container">
+        <input type="text" id="newListInput" placeholder="New list name...">
+        <button id="createListBtn">Create</button>
+      </div>
+      <button class="modal-close" id="modalClose">Close</button>
+    </div>
+  </div>
+  
+  <div class="screen screen1 hidden">
 
     <h1 class="title">Davejuguemos</h1>
 
@@ -144,9 +159,11 @@
 
   <h1 class="title">Davejuguemos</h1>
 
-  <div class="review-toggle">
-    <button id="showMissed" class="active">Missed Words</button>
-    <button id="showFlagged">Flagged Words</button>
+  <div class="review-select-row">
+    <label for="reviewListSelect" class="review-select-label"></label>
+    <select id="reviewListSelect" class="review-list-select">
+      <option value="missed">Missed Words</option>
+    </select>
   </div>
 
   <div class="review-list">

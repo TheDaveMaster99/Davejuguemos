@@ -29,7 +29,7 @@ const textInput = document.getElementById("textInput");
 const scoreDisplay = document.getElementById("score");
 
 const showMissedB = document.getElementById("showMissed");
-const showFlaggedB = document.getElementById("showFlagged");
+const reviewListSelect = document.getElementById("reviewListSelect");
 const reviewList = document.querySelector(".review-list");
 const reviewBackB = document.getElementById("reviewBack");
 
@@ -45,7 +45,7 @@ const audioCtx = new AudioContext();
 
 let correctBuffer = null;
 let wrongBuffer = null;
-//let audioUnlocked = false;
+let audioUnlocked = false;
 
 let ogWordsArray = [];
 let wordsArray = [];
@@ -54,6 +54,7 @@ let score =[0,0]
 let point = true; 
 let wrongs = [];
 let flags = [];
+let customLists = {}; // {"listName": ["word1", "word2"]}
 let mode = "regular";
 let screen = ".screen2";
 let dictBackToggle = false;
@@ -82,6 +83,7 @@ function run() {
         showAnswer(wordsArray[index].Word);
     });
     filterB.addEventListener("click", () => {
+        updateFilterCheckboxes();
         setScreen(".screen-filter");
     });
     audioB.addEventListener("click", () => {
@@ -103,13 +105,7 @@ function run() {
         }
     });
     flagB.addEventListener("click", () => {
-        flagB.classList.toggle("yellow");
-        if (flags.includes(wordsArray[index].Word)) {
-            flags = flags.filter(word => word !== wordsArray[index].Word);
-        } else {
-            flags.push(wordsArray[index].Word);
-        }
-        saveData();
+        showListModal(wordsArray[index].Word);
     }); 
 
     beginB.addEventListener("click", () => {
@@ -187,28 +183,18 @@ function run() {
         setScreen(".screen-review");
     });
 
-    showMissedB.addEventListener("click", () => {
-        reviewMode = "missed";
-        showMissedB.classList.add("active");
-        showFlaggedB.classList.remove("active");
-        saveReviewMode();
-        renderReview();
-    });
-    showFlaggedB.addEventListener("click", () => {
-        reviewMode = "flagged";
-        showFlaggedB.classList.add("active");
-        showMissedB.classList.remove("active");
-        saveReviewMode();
-        renderReview();
-    });
      reviewBackB.addEventListener("click", () => {
    
         reviewList.querySelectorAll(".review-item button.removed").forEach(btn => {
             const word = btn.dataset.word;
             if(reviewMode === "missed") {
                 wrongs = wrongs.filter(w => w !== word);
-            } else {
+            } else if (reviewMode === "flagged") {
                 flags = flags.filter(w => w !== word);
+            } else {
+                if (customLists[reviewMode]) {
+                    customLists[reviewMode] = customLists[reviewMode].filter(w => w !== word);
+                }
             }
         });
         saveData();
@@ -305,7 +291,13 @@ function run() {
 
     function openDictFromReview(idx) {
         dictIndex = idx;
-        reviewWords = reviewMode === "missed" ? wrongs : flags;
+        if (reviewMode === "missed") {
+            reviewWords = wrongs;
+        } else if (reviewMode === "flagged") {
+            reviewWords = flags;
+        } else {
+            reviewWords = customLists[reviewMode] || [];
+        }
         showDictWord();
         setScreen(".screen-dictionary");
     }
@@ -327,9 +319,51 @@ function run() {
 
     //Review functions
 
+    function loadReviewMode() {
+        const savedData3 = localStorage.getItem("reviewData");
+        if (savedData3) {
+            const data3 = JSON.parse(savedData3);
+            reviewMode = data3.reviewMode || "missed";
+        } else {
+            reviewMode = "missed";
+        }
+
+        updateReviewListSelect();
+    }
+
+    function updateReviewListSelect() {
+        reviewListSelect.innerHTML = `
+            <option value="missed">Missed Words</option>
+        `;
+        
+        for (const listName in customLists) {
+            const option = document.createElement("option");
+            option.value = listName;
+            option.textContent = listName;
+            if (reviewMode === listName) {
+                option.selected = true;
+            }
+            reviewListSelect.appendChild(option);
+        }
+
+        reviewListSelect.value = reviewMode;
+        reviewListSelect.addEventListener("change", (e) => {
+            reviewMode = e.target.value;
+            saveReviewMode();
+            renderReview();
+        });
+    }
+
     function renderReview() {
         reviewList.innerHTML = "";
-        reviewWords = reviewMode === "missed" ? wrongs : flags;
+        
+        if (reviewMode === "missed") {
+            reviewWords = wrongs;
+        } else if (reviewMode === "flagged") {
+            reviewWords = flags;
+        } else {
+            reviewWords = customLists[reviewMode] || [];
+        }
 
     
         const addDiv = document.createElement("div");
@@ -353,10 +387,18 @@ function run() {
                 return;
             }
 
-            const list = reviewMode === "missed" ? wrongs : flags;
-            if (list.includes(found.Word)) return;
-
-            list.unshift(found.Word);
+            if (reviewMode === "missed") {
+                if (wrongs.includes(found.Word)) return;
+                wrongs.unshift(found.Word);
+            } else if (reviewMode === "flagged") {
+                if (flags.includes(found.Word)) return;
+                flags.unshift(found.Word);
+            } else {
+                if (!customLists[reviewMode]) customLists[reviewMode] = [];
+                if (customLists[reviewMode].includes(found.Word)) return;
+                customLists[reviewMode].unshift(found.Word);
+            }
+            
             input.value = "";
             input.classList.remove("invalid");
 
@@ -453,10 +495,19 @@ function run() {
         const starredChecked = document.getElementById("filterStarred").checked;
         const missedChecked = document.getElementById("filterMissed").checked;
 
+        // Get selected custom lists
+        const selectedLists = [];
+        const listCheckboxes = document.querySelectorAll('.filter-options input[data-list]');
+        listCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                selectedLists.push(checkbox.dataset.list);
+            }
+        });
+
    
         wordsArray = wordsArray.filter(wordObj => {
      
-            if (!hyphenChecked && !spaceChecked && !capsChecked && !ableChecked && !starredChecked && !missedChecked) {
+            if (!hyphenChecked && !spaceChecked && !capsChecked && !ableChecked && !starredChecked && !missedChecked && selectedLists.length === 0) {
                 return true;
             }
 
@@ -467,7 +518,8 @@ function run() {
                 (capsChecked && /[A-Z]/.test(wordObj.Word)) ||
                 (ableChecked && /(able|ible)$/i.test(wordObj.Word)) ||
                 (starredChecked && flags.includes(wordObj.Word)) ||
-                (missedChecked && wrongs.includes(wordObj.Word))
+                (missedChecked && wrongs.includes(wordObj.Word)) ||
+                selectedLists.some(listName => customLists[listName]?.includes(wordObj.Word))
             );
         });
         if (wordsArray.length === 0) {
@@ -517,13 +569,13 @@ function run() {
         wrongBuffer = await loadSound("wrong.mp3");
     }
 
-    /*function unlockAudio() {
+    function unlockAudio() {
         if (audioUnlocked) return;
         audioUnlocked = true;
         audioCtx.resume();
     }
     document.addEventListener("click", unlockAudio, { once: true });
-    document.addEventListener("keydown", unlockAudio, { once: true }); */
+    document.addEventListener("keydown", unlockAudio, { once: true }); 
 
     // Data saving/loading
 
@@ -533,6 +585,7 @@ function run() {
         wordsArray = structuredClone(ogWordsArray);
         loadOrderedLetters();
         loadData();
+        updateFilterCheckboxes();
         loadScreen();
         updateScore();
         loadCheckboxes();
@@ -544,6 +597,7 @@ function run() {
         }
     
     }
+    
     function loadCheckboxes() {
         const boxes = document.querySelectorAll('.filter-options input[type="checkbox"]');
 
@@ -588,24 +642,6 @@ function run() {
         };                
         localStorage.setItem("reviewData", JSON.stringify(data3)); 
     }
-    function loadReviewMode() {
-        const savedData3 = localStorage.getItem("reviewData");
-
-        if (savedData3) {
-            const data3 = JSON.parse(savedData3);
-
-            reviewMode = data3.reviewMode || "missed";
-            if(reviewMode === "flagged") {
-                showFlaggedB.classList.add("active");
-                showMissedB.classList.remove("active");
-            } else {
-                showMissedB.classList.add("active");
-                showFlaggedB.classList.remove("active");
-            }
-        } else {
-            reviewMode = "missed";
-        }
-    }
     function saveOrderedIndex() {
         if (mode !== "ordered") return;
         localStorage.setItem("orderedIndex", index);
@@ -626,7 +662,8 @@ function run() {
         const data = {
             score: score,                 
             wrongs: wrongs,
-            flags: flags
+            flags: flags,
+            customLists: customLists
         };
         localStorage.setItem("davejuguemosData", JSON.stringify(data)); 
     }
@@ -637,10 +674,13 @@ function run() {
             score = data.score || [0,0];
             wrongs = data.wrongs || [];   
             flags = data.flags || [];     
+            customLists = data.customLists || {};
         } else {
             score = [0,0];
             wrongs = [];
             flags = [];
+            customLists = {};
+            initializeDefaultLists();
         }
     }
     function saveScreen() {
@@ -678,7 +718,112 @@ function run() {
         }
 
     }
+
+    function showListModal(word) {
+        const modal = document.getElementById("listModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const listOptions = document.getElementById("listOptions");
+        const newListInput = document.getElementById("newListInput");
+        const createListBtn = document.getElementById("createListBtn");
+        const modalClose = document.getElementById("modalClose");
+
+        modalTitle.textContent = `Add "${word}" to List`;
+        listOptions.innerHTML = "";
+        newListInput.value = "";
+
+        // Show existing lists
+        for (const listName in customLists) {
+            const btn = document.createElement("button");
+            btn.className = "list-option-btn";
+            btn.textContent = listName;
+            
+            // Check if word is already in this list
+            if (customLists[listName].includes(word)) {
+                btn.classList.add("active");
+                btn.textContent = listName + " ✓";
+            }
+            
+            btn.addEventListener("click", () => {
+                toggleWordInList(word, listName);
+                showListModal(word); // Refresh modal
+            });
+            listOptions.appendChild(btn);
+        }
+
+        // Handle create new list
+        createListBtn.addEventListener("click", () => {
+            const newListName = newListInput.value.trim();
+            if (newListName && !customLists[newListName]) {
+                customLists[newListName] = [word];
+                saveData();
+                showListModal(word); // Refresh modal
+            }
+        }, { once: true });
+
+        // Handle close
+        modalClose.addEventListener("click", () => {
+            modal.classList.add("hidden");
+        }, { once: true });
+
+        // Close when clicking outside
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.classList.add("hidden");
+            }
+        });
+
+        modal.classList.remove("hidden");
+    }
+
+    function toggleWordInList(word, listName) {
+        if (!customLists[listName]) {
+            customLists[listName] = [];
+        }
+
+        if (customLists[listName].includes(word)) {
+            customLists[listName] = customLists[listName].filter(w => w !== word);
+        } else {
+            customLists[listName].push(word);
+        }
+        saveData();
+    }
+
+    function initializeDefaultLists() {
+        // Create default lists by scanning words
+        customLists["Capitalized"] = ogWordsArray.filter(w => /[A-Z]/.test(w.Word)).map(w => w.Word);
+        customLists["Hyphens"] = ogWordsArray.filter(w => w.Word.includes('-')).map(w => w.Word);
+        customLists["Spaces"] = ogWordsArray.filter(w => w.Word.includes(' ')).map(w => w.Word);
+        customLists["Able/Ible"] = ogWordsArray.filter(w => /(able|ible)$/i.test(w.Word)).map(w => w.Word);
+        saveData();
+    }
+
+    function updateFilterCheckboxes() {
+        const filterOptions = document.querySelector('.filter-options');
+        const existingListLabels = filterOptions.querySelectorAll('label[data-list]');
+        existingListLabels.forEach(label => label.remove());
+
+        for (const listName in customLists) {
+            const label = document.createElement("label");
+            label.dataset.list = listName;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.list = listName;
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem("list_" + listName, checkbox.checked);
+                filterWords();
+            });
+
+            const saved = localStorage.getItem("list_" + listName);
+            if (saved === 'true') checkbox.checked = true;
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(listName));
+            filterOptions.appendChild(label);
+        }
+    }
 }
+
 
 
 
